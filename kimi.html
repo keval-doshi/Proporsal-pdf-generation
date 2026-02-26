@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ActLocal Proposal Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section h2 span {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .service-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .service-input {
+            flex: 2;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .service-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .price-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            text-align: right;
+        }
+        
+        .price-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .remove-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.3s;
+        }
+        
+        .remove-btn:hover {
+            background: #ff3838;
+        }
+        
+        .add-btn {
+            background: #2ed573;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .add-btn:hover {
+            background: #26d063;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(46, 213, 115, 0.4);
+        }
+        
+        .terms-grid {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .term-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        
+        .term-checkbox {
+            width: 18px;
+            height: 18px;
+            margin-top: 3px;
+            accent-color: #667eea;
+        }
+        
+        .term-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .total-section {
+            margin-top: 25px;
+            padding: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+        
+        .total-label {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .total-display {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+        }
+        
+        .total-amount {
+            font-size: 28px;
+            font-weight: 800;
+        }
+        
+        .auto-calc-badge {
+            font-size: 12px;
+            opacity: 0.9;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        
+        .client-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .form-group input {
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .generate-section {
+            margin-top: 40px;
+            text-align: center;
+            padding-top: 30px;
+            border-top: 3px solid #667eea;
+        }
+        
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+        
+        .generate-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .preset-badge {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-left: 10px;
+            font-weight: 600;
+        }
+        
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        
+        .required {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 ActLocal Proposal Generator</h1>
+            <p>Configure services and generate complete 11-page proposal PDF</p>
+        </div>
+        
+        <div class="info-box">
+            <strong>📁 Required Files:</strong> Make sure you have page_1.png through page_8.png, page_9_right.png, page_9_logo.png, page_10.png, and stamp.png in the same folder.
+        </div>
+        
+        <!-- Section 1: Services -->
+        <div class="section">
+            <h2><span>1</span> Services & Pricing</h2>
+            <div id="servicesContainer"></div>
+            <button class="add-btn" onclick="addService()">
+                <span>+</span> Add Custom Service
+            </button>
+            
+            <div class="total-section">
+                <span class="total-label">TOTAL MONTHLY COST</span>
+                <div class="total-display">
+                    <span class="auto-calc-badge">🧮 Auto-calculated</span>
+                    <div class="total-amount" id="totalAmountDisplay">0 AED/Monthly</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 2: Terms -->
+        <div class="section">
+            <h2><span>2</span> Terms & Conditions</h2>
+            <div class="terms-grid" id="termsContainer">
+                <div class="term-item">
+                    <input type="checkbox" class="term-checkbox" checked>
+                    <input type="text" class="term-input" value="5% VAT to be included in the invoice.">
+                </div>
+                <div class="term-item">
+                    <input type="checkbox" class="term-checkbox" checked>
+                    <input type="text" class="term-input" value="Paid ads to be directly to the platforms.">
+                </div>
+                <div class="term-item">
+                    <input type="checkbox" class="term-checkbox" checked>
+                    <input type="text" class="term-input" value="Contract Period: 12 Months">
+                </div>
+                <div class="term-item">
+                    <input type="checkbox" class="term-checkbox" checked>
+                    <input type="text" class="term-input" value="Termination: 30 Days' Notice Period">
+                </div>
+                <div class="term-item">
+                    <input type="checkbox" class="term-checkbox" checked>
+                    <input type="text" class="term-input" value="Payment Method: Bank Transfer or Stripe AutoPay.">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 3: Client Information -->
+        <div class="section">
+            <h2><span>3</span> Client Information <span class="required">*</span></h2>
+            <div class="client-form">
+                <div class="form-group">
+                    <label>Client Name <span class="required">*</span></label>
+                    <input type="text" id="clientName" placeholder="Enter client name" required>
+                </div>
+                <div class="form-group">
+                    <label>Client Email <span class="required">*</span></label>
+                    <input type="email" id="clientEmail" placeholder="Enter client email" required>
+                </div>
+                <div class="form-group">
+                    <label>Client Phone <span class="required">*</span></label>
+                    <input type="tel" id="clientPhone" placeholder="Enter client phone number" required>
+                </div>
+                <div class="form-group full-width">
+                    <label>Document ID (Optional)</label>
+                    <input type="text" id="documentId" placeholder="Leave blank for auto-generation or enter custom ID">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Generate Button -->
+        <div class="generate-section">
+            <button class="generate-btn" id="generateBtn" onclick="generateFullPDF()">
+                ⚡ Generate Complete Proposal PDF
+            </button>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div class="loading-text">Generating 11-page PDF... Please wait</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Preset services
+        const presetServices = [
+            { name: 'Marketing Consultancy & Strategy', price: '', editable: false },
+            { name: 'Performance Marketing (Ads Management, Targeting & Reporting)', price: '', editable: false },
+            { name: 'Google My Business Optimization', price: '', editable: false },
+            { name: 'Website Revamping & Management', price: '', editable: false }
+        ];
+        
+        let serviceCount = 0;
+        
+        // Initialize
+        window.onload = function() {
+            presetServices.forEach(service => {
+                addService(service.name, service.price, service.editable);
+            });
+            calculateTotal();
+        };
+        
+        function addService(name = '', price = '', editable = true) {
+            const container = document.getElementById('servicesContainer');
+            const row = document.createElement('div');
+            row.className = 'service-row';
+            row.id = `service-${serviceCount}`;
+            
+            const badge = editable ? '' : '<span class="preset-badge">PRESET</span>';
+            
+            row.innerHTML = `
+                <input type="text" class="service-input" placeholder="Enter service name" value="${name}" ${editable ? '' : 'readonly style="background:#f5f5f5;"'}>
+                ${badge}
+                <input type="number" class="price-input" placeholder="0" value="${price}" oninput="calculateTotal()">
+                ${editable ? `<button class="remove-btn" onclick="removeService('service-${serviceCount}')">Remove</button>` : ''}
+            `;
+            
+            container.appendChild(row);
+            serviceCount++;
+        }
+        
+        function removeService(id) {
+            document.getElementById(id).remove();
+            calculateTotal();
+        }
+        
+        function calculateTotal() {
+            const priceInputs = document.querySelectorAll('.price-input');
+            let total = 0;
+            
+            priceInputs.forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                total += value;
+            });
+            
+            document.getElementById('totalAmountDisplay').textContent = total.toLocaleString() + ' AED/Monthly';
+        }
+        
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} CET (+0100)`;
+        }
+        
+        function validateForm() {
+            const name = document.getElementById('clientName').value.trim();
+            const email = document.getElementById('clientEmail').value.trim();
+            const phone = document.getElementById('clientPhone').value.trim();
+            
+            if (!name || !email || !phone) {
+                alert('Please fill in all client information fields (Name, Email, Phone)');
+                return false;
+            }
+            
+            if (!email.includes('@')) {
+                alert('Please enter a valid email address');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        async function generateFullPDF() {
+            if (!validateForm()) return;
+            
+            const btn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            
+            btn.disabled = true;
+            loading.classList.add('active');
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                
+                // Create PDF
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: [297, 210]
+                });
+                
+                // Pages 1-8: Static images (landscape)
+                const staticPages = ['page_1.png', 'page_2.png', 'page_3.png', 'page_4.png', 
+                                    'page_5.png', 'page_6.png', 'page_7.png', 'page_8.png'];
+                
+                for (let i = 0; i < staticPages.length; i++) {
+                    if (i > 0) pdf.addPage([297, 210], 'landscape');
+                    
+                    try {
+                        const img = await loadImage(staticPages[i]);
+                        pdf.addImage(img, 'PNG', 0, 0, 297, 210);
+                    } catch (e) {
+                        console.warn(`Failed to load ${staticPages[i]}`);
+                        pdf.setFillColor(240, 240, 240);
+                        pdf.rect(0, 0, 297, 210, 'F');
+                        pdf.text(`Page ${i + 1}: Image not found`, 148.5, 105, { align: 'center' });
+                    }
+                }
+                
+                // Page 9: Dynamic (landscape)
+                pdf.addPage([297, 210], 'landscape');
+                await generatePage9(pdf);
+                
+                // Page 10: Static (landscape)
+                pdf.addPage([297, 210], 'landscape');
+                try {
+                    const page10Img = await loadImage('page_10.png');
+                    pdf.addImage(page10Img, 'PNG', 0, 0, 297, 210);
+                } catch (e) {
+                    console.warn('Failed to load page_10.png');
+                    pdf.setFillColor(240, 240, 240);
+                    pdf.rect(0, 0, 297, 210, 'F');
+                    pdf.text('Page 10: Image not found', 148.5, 105, { align: 'center' });
+                }
+                
+                // Page 11: Verification page (PORTRAIT A4)
+                pdf.addPage([210, 297], 'portrait');
+                await generatePage11(pdf);
+                
+                // Save
+                pdf.save('ActLocal_Proposal_Complete.pdf');
+                
+            } catch (error) {
+                console.error('PDF generation failed:', error);
+                alert('Error: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                loading.classList.remove('active');
+            }
+        }
+        
+        async function generatePage9(pdf) {
+            const primaryBlue = [41, 128, 185];
+            const darkText = [44, 62, 80];
+            
+            // White background left side
+            pdf.setFillColor(255, 255, 255);
+            pdf.rect(0, 0, 148.5, 210, 'F');
+            
+            // Title
+            pdf.setTextColor(0, 150, 200);
+            pdf.setFontSize(18);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('TIME TO BECOME MORE VISIBLE ONLINE!', 10, 15);
+            
+            // Table Header
+            pdf.setFillColor(primaryBlue[0], primaryBlue[1], primaryBlue[2]);
+            pdf.rect(10, 22, 128.5, 10, 'F');
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFontSize(11);
+            pdf.text('SERVICE', 12, 28.5);
+            pdf.text('COST', 110, 28.5);
+            
+            // Services
+            const serviceRows = document.querySelectorAll('.service-row');
+            let yPos = 35;
+            
+            serviceRows.forEach((row, index) => {
+                const inputs = row.querySelectorAll('input');
+                const serviceName = inputs[0].value;
+                const price = inputs[1].value;
+                
+                if (index % 2 === 0) {
+                    pdf.setFillColor(240, 248, 255);
+                } else {
+                    pdf.setFillColor(255, 255, 255);
+                }
+                pdf.rect(10, yPos - 5, 128.5, 12, 'F');
+                
+                pdf.setTextColor(darkText[0], darkText[1], darkText[2]);
+                pdf.setFontSize(9);
+                pdf.setFont('helvetica', 'normal');
+                
+                const splitName = pdf.splitTextToSize(serviceName, 85);
+                pdf.text(splitName, 12, yPos + 2);
+                
+                pdf.setFont('helvetica', 'bold');
+                const priceText = price ? parseFloat(price).toLocaleString() : '-';
+                pdf.text(priceText, 125, yPos + 2, { align: 'right' });
+                
+                yPos += 12;
+            });
+            
+            // Total
+            pdf.setFillColor(230, 240, 250);
+            pdf.rect(10, yPos - 5, 128.5, 12, 'F');
+            pdf.setTextColor(darkText[0], darkText[1], darkText[2]);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(11);
+            pdf.text('Total', 12, yPos + 2);
+            
+            const totalText = document.getElementById('totalAmountDisplay').textContent;
+            pdf.setTextColor(0, 100, 150);
+            pdf.text(totalText, 125, yPos + 2, { align: 'right' });
+            
+            yPos += 20;
+            
+            // Terms
+            pdf.setTextColor(darkText[0], darkText[1], darkText[2]);
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'normal');
+            
+            const termItems = document.querySelectorAll('.term-item');
+            termItems.forEach(item => {
+                const checkbox = item.querySelector('.term-checkbox');
+                const text = item.querySelector('.term-input').value;
+                
+                if (checkbox.checked) {
+                    pdf.setFillColor(primaryBlue[0], primaryBlue[1], primaryBlue[2]);
+                    pdf.rect(12, yPos - 3, 4, 4, 'F');
+                    pdf.text(text, 18, yPos);
+                    yPos += 8;
+                }
+            });
+            
+            // Signature with increased spacing
+            yPos += 15;
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(11);
+            pdf.text('Sign this agreement to accept the quote', 10, yPos);
+            
+            yPos += 25;
+            pdf.setDrawColor(100, 100, 100);
+            pdf.line(10, yPos, 80, yPos);
+            
+            // Logo image (fixed/static)
+            try {
+                const logoImg = await loadImage('page_9_logo.png');
+                pdf.addImage(logoImg, 'PNG', 95, yPos - 20, 40, 20);
+            } catch (e) {
+                pdf.setTextColor(100, 150, 200);
+                pdf.setFontSize(12);
+                pdf.text('Lets Fly', 100, yPos - 5);
+                pdf.text('Together', 100, yPos + 2);
+            }
+            
+            // Right side image (fixed/static)
+            try {
+                const rightImg = await loadImage('page_9.png');
+                pdf.addImage(rightImg, 'PNG', 148.5, 0, 148.5, 210);
+            } catch (e) {
+                console.warn('page_9_right.png not found');
+            }
+        }
+        
+        async function generatePage11(pdf) {
+            const now = new Date();
+            const formattedDate = formatDate(now);
+            const shortDate = now.toISOString().split('T')[0] + ' ' + now.toTimeString().split(' ')[0].substring(0, 8);
+            
+            // Get client info
+            const clientName = document.getElementById('clientName').value;
+            const clientEmail = document.getElementById('clientEmail').value;
+            const clientPhone = document.getElementById('clientPhone').value;
+            const docId = document.getElementById('documentId').value || '';
+            
+            // Colors
+            const textGray = [80, 80, 80];
+            const borderGray = [200, 200, 200];
+            const black = [0, 0, 0];
+            
+            // White background
+            pdf.setFillColor(255, 255, 255);
+            pdf.rect(0, 0, 210, 297, 'F');
+            
+            // Title "Verification"
+            pdf.setTextColor(textGray[0], textGray[1], textGray[2]);
+            pdf.setFontSize(28);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text('Verification', 20, 30);
+            
+            // Document ID
+            pdf.setFontSize(10);
+            pdf.text(`Document ID ${docId}`, 20, 42);
+            
+            // Document section box (with border)
+            pdf.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
+            pdf.setLineWidth(0.5);
+            pdf.rect(20, 50, 170, 65);
+            
+            // Document label (bold)
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(11);
+            pdf.text('Document', 25, 62);
+            
+            // Document details
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(10);
+            pdf.text('Act Local Monea_Revised', 25, 75);
+            pdf.text('Main document', 25, 83);
+            pdf.text('10 pages', 25, 91);
+            pdf.text(`Initiated on ${formattedDate} by Act Local`, 25, 99);
+            pdf.text('UAE (AU)', 25, 107);
+            pdf.text(`Finalised on ${formattedDate} (+0100)`, 25, 115);
+            
+            // Signatories section
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(11);
+            pdf.text('Signatories', 20, 135);
+            
+            // ActLocal UAE Box (Left) - with border
+            pdf.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
+            pdf.rect(20, 140, 80, 75);
+            
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Act Local UAE (AU)', 25, 152);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text('ActLocal UAE', 25, 165);
+            pdf.text('contract@actlocal.ae', 25, 175);
+            pdf.text('+971588995545', 25, 185);
+            pdf.text(`Signed ${formattedDate} (+0100)`, 25, 200);
+            
+            // Client Box (Right) - with border
+            pdf.rect(110, 140, 80, 75);
+            
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(`${clientName} (M)`, 115, 152);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text(clientName, 115, 165);
+            pdf.text(clientEmail, 115, 175);
+            pdf.text(clientPhone, 115, 185);
+            
+            // Signature line for client (horizontal line)
+            pdf.setDrawColor(150, 150, 150);
+            pdf.line(115, 195, 185, 195);
+            pdf.setFontSize(9);
+            pdf.text('Signature required', 115, 205);
+            
+            // Verification text box (at bottom)
+            pdf.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
+            pdf.rect(20, 225, 170, 45);
+            
+            pdf.setFontSize(8);
+            pdf.setTextColor(100, 100, 100);
+            const verificationText = `This verification was issued by Scrive. For more information/evidence about this document see the concealed attachments. Use a PDF-reader such as Adobe Reader that can show concealed attachments to view the attachments. Please observe that if the document is printed, the integrity of such printed copy cannot be verified as per the below and that a basic print-out lacks the contents of the concealed attachments. The digital signature (electronic seal) ensures that the integrity of this document, including the concealed attachments, can be proven mathematically and independently of Scrive. For your convenience Scrive also provides a service that enables you to automatically verify the document's integrity at: https://scrive.com/verify`;
+            
+            const splitText = pdf.splitTextToSize(verificationText, 160);
+            pdf.text(splitText, 25, 235);
+            
+            // Stamp at bottom right (using stamp.png)
+            try {
+                const stampImg = await loadImage('stamp.png');
+                // Position at bottom right corner
+                pdf.addImage(stampImg, 'PNG', 150, 245, 50, 50);
+            } catch (e) {
+                // Draw placeholder circle if stamp not found
+                console.warn('stamp.png not found, using placeholder');
+                pdf.setDrawColor(100, 100, 100);
+                pdf.setLineWidth(2);
+                pdf.circle(175, 270, 20);
+                pdf.setFontSize(10);
+                pdf.setTextColor(100, 100, 100);
+                pdf.text('STAMP', 165, 505);
+            }
+        }
+        
+        function loadImage(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error(`Failed to load ${src}`));
+                img.src = src;
+            });
+        }
+    </script>
+</body>
+</html>
