@@ -1,53 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ActLocal Proposal Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 20px;
             min-height: 100vh;
         }
-        
+
         .container {
             max-width: 1000px;
             margin: 0 auto;
             background: white;
             padding: 30px;
             border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             width: 100%;
         }
-        
+
         .header {
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 3px solid #667eea;
         }
-        
+
         .header h1 {
             color: #333;
             font-size: clamp(24px, 5vw, 32px);
             margin-bottom: 10px;
             line-height: 1.2;
         }
-        
+
         .header p {
             color: #666;
             font-size: clamp(14px, 3vw, 16px);
         }
-        
+
         .section {
             margin-bottom: 25px;
             padding: 20px;
@@ -55,7 +57,7 @@
             border-radius: 12px;
             border-left: 4px solid #667eea;
         }
-        
+
         .section h2 {
             color: #333;
             margin-bottom: 15px;
@@ -65,7 +67,7 @@
             gap: 10px;
             flex-wrap: wrap;
         }
-        
+
         .section h2 span {
             background: #667eea;
             color: white;
@@ -78,7 +80,7 @@
             font-size: 14px;
             flex-shrink: 0;
         }
-        
+
         .service-row {
             display: flex;
             gap: 10px;
@@ -87,10 +89,16 @@
             background: white;
             padding: 12px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             flex-wrap: wrap;
+            border: 2px solid transparent;
+            transition: border-color 0.3s;
         }
-        
+
+        .service-row:hover {
+            border-color: #667eea;
+        }
+
         .service-input {
             flex: 2;
             min-width: 200px;
@@ -100,12 +108,12 @@
             font-size: 14px;
             transition: border-color 0.3s;
         }
-        
+
         .service-input:focus {
             outline: none;
             border-color: #667eea;
         }
-        
+
         .price-input {
             flex: 1;
             min-width: 100px;
@@ -116,12 +124,54 @@
             transition: border-color 0.3s;
             text-align: right;
         }
-        
+
         .price-input:focus {
             outline: none;
             border-color: #667eea;
         }
-        
+
+        .period-input {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            text-align: center;
+        }
+
+        .period-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .include-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: #f0f4ff;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            min-width: 140px;
+        }
+
+        .include-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #667eea;
+            cursor: pointer;
+        }
+
+        .include-checkbox label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #667eea;
+            cursor: pointer;
+        }
+
         .remove-btn {
             background: #ff4757;
             color: white;
@@ -133,11 +183,11 @@
             transition: background 0.3s;
             white-space: nowrap;
         }
-        
+
         .remove-btn:hover {
             background: #ff3838;
         }
-        
+
         .add-btn {
             background: #2ed573;
             color: white;
@@ -155,48 +205,86 @@
             width: 100%;
             justify-content: center;
         }
-        
+
         .add-btn:hover {
             background: #26d063;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(46, 213, 115, 0.4);
         }
-        
-        .terms-grid {
-            display: grid;
-            gap: 10px;
-        }
-        
-        .term-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
+
+        .calculation-box {
             background: white;
-            padding: 10px;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .calc-row:last-child {
+            border-bottom: none;
+        }
+
+        .calc-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .calc-value {
+            font-weight: 700;
+            color: #333;
+        }
+
+        .vat-row,
+        .discount-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 15px;
+            background: #ffffff;
             border-radius: 8px;
-            flex-wrap: wrap;
+            border: 1px solid #e0e0e0;
         }
-        
-        .term-checkbox {
-            width: 18px;
-            height: 18px;
-            margin-top: 3px;
+
+        .vat-checkbox {
+            width: 20px;
+            height: 20px;
             accent-color: #667eea;
-            flex-shrink: 0;
         }
-        
-        .term-input {
+
+        .vat-label,
+        .discount-label {
+            font-weight: 600;
+            color: #333;
             flex: 1;
-            min-width: 200px;
+        }
+
+        .discount-input {
+            flex: 1;
             padding: 10px 14px;
             border: 2px solid #e0e0e0;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 14px;
+            max-width: 150px;
+            text-align: right;
         }
-        
+
+        .discount-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
         .total-section {
             margin-top: 20px;
-            padding: 20px;
+            padding: 25px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 12px;
             display: flex;
@@ -206,55 +294,113 @@
             flex-wrap: wrap;
             gap: 15px;
         }
-        
+
         .total-label {
             font-size: clamp(16px, 4vw, 20px);
             font-weight: 700;
         }
-        
+
         .total-display {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             gap: 5px;
         }
-        
+
         .total-amount {
-            font-size: clamp(20px, 5vw, 28px);
+            font-size: clamp(24px, 5vw, 32px);
             font-weight: 800;
         }
-        
-        .auto-calc-badge {
-            font-size: 11px;
+
+        .total-period {
+            font-size: 14px;
             opacity: 0.9;
-            background: rgba(255,255,255,0.2);
-            padding: 4px 12px;
-            border-radius: 20px;
-            white-space: nowrap;
         }
-        
+
+        /* Extra items section - no special styling */
+        .extra-items-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .extra-items-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .extra-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+        }
+
+        .extra-item:last-child {
+            border-bottom: none;
+        }
+
+        .terms-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .term-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+
+        .term-checkbox {
+            width: 18px;
+            height: 18px;
+            margin-top: 3px;
+            accent-color: #667eea;
+            flex-shrink: 0;
+        }
+
+        .term-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
         .client-form {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
         }
-        
+
         .form-group {
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
-        
+
         .form-group.full-width {
             grid-column: 1 / -1;
         }
-        
+
         .form-group label {
             font-weight: 600;
             color: #333;
             font-size: 14px;
         }
-        
+
         .form-group input {
             padding: 12px 16px;
             border: 2px solid #e0e0e0;
@@ -263,58 +409,89 @@
             transition: border-color 0.3s;
             width: 100%;
         }
-        
+
         .form-group input:focus {
             outline: none;
             border-color: #667eea;
         }
-        
+
         .generate-section {
             margin-top: 30px;
             text-align: center;
             padding-top: 20px;
             border-top: 3px solid #667eea;
         }
-        
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
         .generate-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             padding: 16px 40px;
             border-radius: 12px;
-            font-size: clamp(16px, 4vw, 20px);
+            font-size: clamp(16px, 4vw, 18px);
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
             text-transform: uppercase;
             letter-spacing: 1px;
             box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-            width: 100%;
-            max-width: 400px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        
+
         .generate-btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
         }
-        
+
         .generate-btn:disabled {
             background: #ccc;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
-        
+
+        .preview-btn {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 12px;
+            font-size: clamp(16px, 4vw, 18px);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 30px rgba(230, 126, 34, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .preview-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(230, 126, 34, 0.5);
+        }
+
         .loading {
             display: none;
             text-align: center;
             margin-top: 20px;
         }
-        
+
         .loading.active {
             display: block;
         }
-        
+
         .spinner {
             width: 40px;
             height: 40px;
@@ -324,18 +501,23 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 10px;
         }
-        
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
-        
+
         .loading-text {
             color: #667eea;
             font-weight: 600;
             font-size: 14px;
         }
-        
+
         .preset-badge {
             display: inline-block;
             background: #e3f2fd;
@@ -347,7 +529,7 @@
             font-weight: 600;
             white-space: nowrap;
         }
-        
+
         .info-box {
             background: #fff3cd;
             border: 1px solid #ffeaa7;
@@ -358,115 +540,416 @@
             font-size: 13px;
             line-height: 1.5;
         }
-        
+
+        .setup-box {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            color: #1565c0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .setup-box strong {
+            color: #0d47a1;
+        }
+
+        .setup-box code {
+            background: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
         .required {
             color: #e74c3c;
         }
-        
+
+        /* Alert Box Styles */
+        .alert {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert.show {
+            display: flex;
+        }
+
+        .alert-error {
+            background: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+
+        .alert-success {
+            background: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+        }
+
+        .alert-warning {
+            background: #ffeaa7;
+            color: #856404;
+            border: 1px solid #fdcb6e;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal h3 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 24px;
+        }
+
+        .modal h4 {
+            margin: 20px 0 10px 0;
+            color: #667eea;
+            font-size: 18px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .modal-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .modal-btn.primary:hover {
+            background: #5a6fd6;
+            transform: translateY(-2px);
+        }
+
+        .modal-btn.secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .modal-btn.secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .modal-btn.success {
+            background: #2ed573;
+            color: white;
+        }
+
+        .modal-btn.success:hover {
+            background: #26c369;
+        }
+
+        /* Preview Styles */
+        .preview-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .preview-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .preview-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .preview-table tr:nth-child(even) {
+            background: #f0f4ff;
+        }
+
+        .preview-table .total-row {
+            background: #667eea !important;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .preview-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .preview-info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .preview-info-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .preview-info-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 600;
+        }
+
         /* Tablet Styles */
         @media (max-width: 768px) {
             body {
                 padding: 10px;
             }
-            
+
             .container {
                 padding: 20px;
                 border-radius: 12px;
             }
-            
+
             .section {
                 padding: 15px;
             }
-            
+
             .service-row {
                 flex-direction: column;
                 align-items: stretch;
             }
-            
-            .service-input, .price-input {
+
+            .service-input,
+            .price-input,
+            .period-input {
                 width: 100%;
                 min-width: unset;
             }
-            
+
+            .include-checkbox {
+                width: 100%;
+                justify-content: center;
+            }
+
             .remove-btn {
                 width: 100%;
                 margin-top: 5px;
             }
-            
+
             .total-section {
                 flex-direction: column;
                 text-align: center;
             }
-            
+
             .total-display {
                 align-items: center;
             }
-            
+
             .client-form {
                 grid-template-columns: 1fr;
             }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .generate-btn,
+            .preview-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .modal {
+                padding: 20px;
+                width: 95%;
+            }
         }
-        
+
         /* Mobile Styles */
         @media (max-width: 480px) {
             .header h1 {
                 font-size: 22px;
             }
-            
+
             .section h2 {
                 font-size: 16px;
             }
-            
+
             .section h2 span {
                 width: 25px;
                 height: 25px;
                 font-size: 12px;
             }
-            
-            .generate-btn {
+
+            .generate-btn,
+            .preview-btn {
                 padding: 14px 20px;
                 font-size: 16px;
             }
-            
+
             .term-item {
                 flex-direction: column;
                 align-items: flex-start;
             }
-            
+
             .term-checkbox {
                 margin-top: 0;
+            }
+
+            .calc-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
             <h1>🚀 ActLocal Proposal Generator</h1>
             <p>Configure services and generate complete 11-page proposal PDF</p>
         </div>
-        
-        <div class="info-box">
-            <strong>📁 Required Files:</strong> Make sure you have page_1.png through page_8.png, page_9_right.png, page_9_logo.png, page_10.png, and stamp.png in the same folder.
+
+
+        <!-- Alert Box -->
+        <div id="alertBox" class="alert">
+            <span id="alertIcon">⚠️</span>
+            <span id="alertMessage"></span>
         </div>
-        
+
         <!-- Section 1: Services -->
         <div class="section">
             <h2><span>1</span> Services & Pricing</h2>
+
             <div id="servicesContainer"></div>
             <button class="add-btn" onclick="addService()">
-                <span>+</span> Add Custom Service
+                <span>+</span> Add Service
             </button>
-            
+
+            <!-- Calculation Box -->
+            <div class="calculation-box">
+                <div class="calc-row">
+                    <span class="calc-label">Subtotal (Included in Total):</span>
+                    <span class="calc-value" id="subtotalDisplay">0 AED</span>
+                </div>
+
+                <!-- VAT Row -->
+                <div class="vat-row">
+                    <input type="checkbox" class="vat-checkbox" id="vatCheckbox" checked onchange="calculateTotal()">
+                    <span class="vat-label">Add 5% VAT</span>
+                    <span class="calc-value" id="vatDisplay">0 AED</span>
+                </div>
+
+                <!-- Discount Row -->
+                <div class="discount-row">
+                    <span class="discount-label">Discount:</span>
+                    <input type="number" class="discount-input" id="discountInput" placeholder="0" value="0"
+                        oninput="calculateTotal()">
+                    <span style="color: #333; font-weight: 600;">AED</span>
+                </div>
+
+                <div class="calc-row" style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #667eea;">
+                    <span class="calc-label" style="font-size: 18px; color: #667eea;">Final Total:</span>
+                    <span class="calc-value" style="font-size: 24px; color: #667eea;" id="finalTotalDisplay">0
+                        AED</span>
+                </div>
+            </div>
+
+            <!-- Extra Items (Not in Total) - Simple styling -->
+            <div id="extraItemsSection" class="extra-items-section" style="display: none;">
+                <div class="extra-items-title">Additional Services</div>
+                <div id="extraItemsList"></div>
+            </div>
+            <div class="section" style="margin-top: 20px;">
+                <h2><span>4</span> Notes</h2>
+                <div class="form-group full-width" style="margin-top: 10px;">
+                    <textarea id="notesInput" class="term-input" rows="4" placeholder="Enter any additional notes here (optional)...&#10;Example: Special payment terms, delivery details, etc." style="width: 100%; min-height: 80px; resize: vertical; font-family: inherit;"></textarea>
+                </div>
+            </div>
+
             <div class="total-section">
-                <span class="total-label">TOTAL MONTHLY COST</span>
+                <span class="total-label">TOTAL AMOUNT</span>
                 <div class="total-display">
-                    <span class="auto-calc-badge">🧮 Auto-calculated</span>
-                    <div class="total-amount" id="totalAmountDisplay">0 AED/Monthly</div>
+                    <span class="total-amount" id="totalAmountDisplay">0 AED</span>
                 </div>
             </div>
         </div>
-        
+
         <!-- Section 2: Terms -->
         <div class="section">
             <h2><span>2</span> Terms & Conditions</h2>
@@ -493,7 +976,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Section 3: Client Information -->
         <div class="section">
             <h2><span>3</span> Client Information <span class="required">*</span></h2>
@@ -516,74 +999,251 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Generate Button -->
+
+        <!-- Generate Buttons -->
         <div class="generate-section">
-            <button class="generate-btn" id="generateBtn" onclick="generateFullPDF()">
-                ⚡ Generate Complete Proposal PDF
-            </button>
+            <div class="button-group">
+                <button class="generate-btn" id="generateBtn" onclick="generateFullPDF()">
+                    📥 Download PDF
+                </button>
+                <button class="preview-btn" id="previewBtn" onclick="openPreviewModal()">
+                    👁️ Preview & Send
+                </button>
+            </div>
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <div class="loading-text">Generating 11-page PDF... Please wait</div>
+                <div class="loading-text" id="loadingText">Processing... Please wait</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview & Email Modal -->
+    <div class="modal-overlay" id="previewModal">
+        <div class="modal">
+            <h3>📧 Preview & Send Proposal</h3>
+
+            <!-- Client Info Preview -->
+            <div class="preview-section">
+                <h4>Client Information</h4>
+                <div class="preview-info">
+                    <div class="preview-info-item">
+                        <div class="preview-info-label">Client Name</div>
+                        <div class="preview-info-value" id="previewClientName">-</div>
+                    </div>
+                    <div class="preview-info-item">
+                        <div class="preview-info-label">Email</div>
+                        <div class="preview-info-value" id="previewClientEmail">-</div>
+                    </div>
+                    <div class="preview-info-item">
+                        <div class="preview-info-label">Phone</div>
+                        <div class="preview-info-value" id="previewClientPhone">-</div>
+                    </div>
+                    <div class="preview-info-item">
+                        <div class="preview-info-label">Document ID</div>
+                        <div class="preview-info-value" id="previewDocId">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services Preview -->
+            <div class="preview-section">
+                <h4>Services & Pricing</h4>
+                <table class="preview-table" id="previewServicesTable">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th style="text-align: right;">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewServicesBody">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+
+                <div id="previewExtraSection"
+                    style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                    <h4 style="color: #333; border-color: #ddd; font-size: 16px;">Additional Services</h4>
+                    <table class="preview-table" id="previewExtraTable" style="margin-top: 10px;">
+                        <tbody id="previewExtraBody">
+                            <!-- Dynamic content -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div
+                    style="background: #667eea; color: white; padding: 15px; border-radius: 8px; margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 18px; font-weight: bold;">Final Total:</span>
+                    <span style="font-size: 24px; font-weight: bold;" id="previewFinalTotal">0 AED</span>
+                </div>
+            </div>
+                            <!-- Notes Preview -->
+                <div id="previewNotesSection" style="display: none; margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #f39c12;">
+                    <h4 style="color: #856404; margin-bottom: 10px; font-size: 14px;">📝 Notes</h4>
+                    <p id="previewNotesText" style="color: #856404; font-size: 13px; line-height: 1.5; white-space: pre-wrap;"></p>
+                </div>
+            </div>
+            <!-- Email Configuration -->
+            <div class="preview-section">
+                <h4>Email Configuration</h4>
+                <label style="font-weight: 600; color: #333; font-size: 14px;">Recipient Email:</label>
+                <input type="email" class="modal-input" id="modalEmail" placeholder="Enter recipient email">
+
+                <label style="font-weight: 600; color: #333; font-size: 14px;">Subject:</label>
+                <input type="text" class="modal-input" id="modalSubject" value="ActLocal Service Proposal"
+                    placeholder="Enter email subject">
+
+                <label style="font-weight: 600; color: #333; font-size: 14px;">Message:</label>
+                <textarea class="modal-input" id="modalMessage" rows="4" placeholder="Enter email message"
+                    style="resize: vertical; font-family: inherit;">Dear Client,
+
+Please find attached our service proposal for your review.
+
+Best regards,
+ActLocal UAE Team</textarea>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closePreviewModal()">Cancel</button>
+                <button class="modal-btn primary" onclick="downloadFromPreview()">
+                    📥 Download PDF
+                </button>
+                <button class="modal-btn success" onclick="sendEmailFromPreview()">
+                    📧 Send Email
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        // Preset services
+        // Preset services - period starts blank
         const presetServices = [
-            { name: 'Marketing Consultancy & Strategy', price: '', editable: false },
-            { name: 'Performance Marketing (Ads Management, Targeting & Reporting)', price: '', editable: false },
-            { name: 'Google My Business Optimization', price: '', editable: false },
-            { name: 'Website Revamping & Management', price: '', editable: false }
+            { name: 'Marketing Consultancy & Strategy', price: '', period: '', includeInTotal: true, editable: false },
+            { name: 'Performance Marketing (Ads Management, Targeting & Reporting)', price: '', period: '', includeInTotal: true, editable: false },
+            { name: 'Google My Business Optimization', price: '', period: '', includeInTotal: true, editable: false },
+            { name: 'Website Revamping & Management', price: '', period: '', includeInTotal: true, editable: false }
         ];
-        
+
         let serviceCount = 0;
-        
+        let currentPDF = null;
+        const API_BASE_URL = 'http://localhost:5000/api';
+
         // Initialize
-        window.onload = function() {
+        window.onload = function () {
             presetServices.forEach(service => {
-                addService(service.name, service.price, service.editable);
+                addService(service.name, service.price, service.period, service.includeInTotal, service.editable);
             });
             calculateTotal();
         };
-        
-        function addService(name = '', price = '', editable = true) {
+
+        function showAlert(message, type = 'error') {
+            const alertBox = document.getElementById('alertBox');
+            const alertIcon = document.getElementById('alertIcon');
+            const alertMessage = document.getElementById('alertMessage');
+
+            alertBox.className = 'alert show alert-' + type;
+            alertMessage.textContent = message;
+
+            if (type === 'error') alertIcon.textContent = '❌';
+            else if (type === 'success') alertIcon.textContent = '✅';
+            else if (type === 'warning') alertIcon.textContent = '⚠️';
+
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 5000);
+        }
+
+        // Updated addService - period is now after price, starts blank
+        function addService(name = '', price = '', period = '', includeInTotal = true, editable = true) {
             const container = document.getElementById('servicesContainer');
             const row = document.createElement('div');
             row.className = 'service-row';
             row.id = `service-${serviceCount}`;
-            
+
             const badge = editable ? '' : '<span class="preset-badge">PRESET</span>';
-            
+            const checked = includeInTotal ? 'checked' : '';
+
+            // Layout: Service Name | Price | Period | Include Checkbox | Remove
             row.innerHTML = `
                 <input type="text" class="service-input" placeholder="Enter service name" value="${name}" ${editable ? '' : 'readonly style="background:#f5f5f5;"'}>
                 ${badge}
-                <input type="number" class="price-input" placeholder="0" value="${price}" oninput="calculateTotal()">
+                <input type="number" class="price-input" placeholder="Price" value="${price}" oninput="calculateTotal()">
+                <input type="text" class="period-input" placeholder="e.g. Monthly, Yearly" value="${period}" oninput="calculateTotal()">
+                <div class="include-checkbox">
+                    <input type="checkbox" id="include-${serviceCount}" ${checked} onchange="calculateTotal()">
+                    <label for="include-${serviceCount}">Include in Total</label>
+                </div>
                 ${editable ? `<button class="remove-btn" onclick="removeService('service-${serviceCount}')">Remove</button>` : ''}
             `;
-            
+
             container.appendChild(row);
             serviceCount++;
         }
-        
+
         function removeService(id) {
             document.getElementById(id).remove();
             calculateTotal();
         }
-        
+
         function calculateTotal() {
-            const priceInputs = document.querySelectorAll('.price-input');
-            let total = 0;
-            
-            priceInputs.forEach(input => {
-                const value = parseFloat(input.value) || 0;
-                total += value;
+            const serviceRows = document.querySelectorAll('.service-row');
+            let subtotal = 0;
+            let extraItems = [];
+
+            serviceRows.forEach(row => {
+                const priceInput = row.querySelector('.price-input');
+                const periodInput = row.querySelector('.period-input');
+                const includeCheckbox = row.querySelector('input[type="checkbox"]');
+                const nameInput = row.querySelector('.service-input');
+
+                const price = parseFloat(priceInput.value) || 0;
+                const period = periodInput.value.trim();
+                const name = nameInput.value.trim();
+
+                if (includeCheckbox.checked) {
+                    subtotal += price;
+                } else if (price > 0 && name) {
+                    extraItems.push({ name, period, price });
+                }
             });
-            
-            document.getElementById('totalAmountDisplay').textContent = total.toLocaleString() + ' AED/Monthly';
+
+            // Calculate VAT (5%)
+            const vatCheckbox = document.getElementById('vatCheckbox');
+            let vatAmount = 0;
+            if (vatCheckbox.checked) {
+                vatAmount = subtotal * 0.05;
+            }
+
+            // Get discount
+            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
+
+            // Calculate final total
+            const finalTotal = subtotal + vatAmount - discount;
+
+            // Update displays
+            document.getElementById('subtotalDisplay').textContent = subtotal.toLocaleString() + ' AED';
+            document.getElementById('vatDisplay').textContent = vatAmount.toLocaleString() + ' AED';
+            document.getElementById('finalTotalDisplay').textContent = finalTotal.toLocaleString() + ' AED';
+            document.getElementById('totalAmountDisplay').textContent = finalTotal.toLocaleString() + ' AED';
+
+            // Update extra items section - simple styling
+            const extraSection = document.getElementById('extraItemsSection');
+            const extraList = document.getElementById('extraItemsList');
+
+            if (extraItems.length > 0) {
+                extraSection.style.display = 'block';
+                extraList.innerHTML = extraItems.map(item => {
+                    const periodText = item.period ? `/${item.period}` : '';
+                    return `
+                    <div class="extra-item">
+                        <span>${item.name}</span>
+                        <span style="font-weight: 600;">${item.price.toLocaleString()}${periodText}</span>
+                    </div>
+                `}).join('');
+            } else {
+                extraSection.style.display = 'none';
+            }
         }
-        
+
         function formatDate(date) {
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -591,250 +1251,775 @@
             const hours = String(date.getHours()).padStart(2, '0');
             const minutes = String(date.getMinutes()).padStart(2, '0');
             const seconds = String(date.getSeconds()).padStart(2, '0');
-            
+
             return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} CET (+0100)`;
         }
-        
+
         function validateForm() {
             const name = document.getElementById('clientName').value.trim();
             const email = document.getElementById('clientEmail').value.trim();
             const phone = document.getElementById('clientPhone').value.trim();
-            
+
             if (!name || !email || !phone) {
-                alert('Please fill in all client information fields (Name, Email, Phone)');
+                showAlert('Please fill in all client information fields (Name, Email, Phone)');
                 return false;
             }
-            
-            if (!email.includes('@')) {
-                alert('Please enter a valid email address');
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showAlert('Please enter a valid email address');
                 return false;
             }
-            
+
             return true;
         }
-        
-        async function generateFullPDF() {
-            if (!validateForm()) return;
-            
-            const btn = document.getElementById('generateBtn');
-            const loading = document.getElementById('loading');
-            
-            btn.disabled = true;
-            loading.classList.add('active');
-            
-            try {
-                const { jsPDF } = window.jspdf;
-                
-                // Create PDF
-                const pdf = new jsPDF({
-                    orientation: 'landscape',
-                    unit: 'mm',
-                    format: [297, 210]
-                });
-                
-                // Pages 1-8: Static images (landscape)
-                const staticPages = ['page_1.png', 'page_2.png', 'page_3.png', 'page_4.png', 
-                                    'page_5.png', 'page_6.png', 'page_7.png', 'page_8.png'];
-                
-                for (let i = 0; i < staticPages.length; i++) {
-                    if (i > 0) pdf.addPage([297, 210], 'landscape');
-                    
-                    try {
-                        const img = await loadImage(staticPages[i]);
-                        pdf.addImage(img, 'PNG', 0, 0, 297, 210);
-                    } catch (e) {
-                        console.warn(`Failed to load ${staticPages[i]}`);
-                        pdf.setFillColor(240, 240, 240);
-                        pdf.rect(0, 0, 297, 210, 'F');
-                        pdf.text(`Page ${i + 1}: Image not found`, 148.5, 105, { align: 'center' });
+
+        function getServicesData() {
+            const serviceRows = document.querySelectorAll('.service-row');
+            const includedServices = [];
+            const extraServices = [];
+
+            serviceRows.forEach(row => {
+                const name = row.querySelector('.service-input').value.trim();
+                const period = row.querySelector('.period-input').value.trim();
+                const price = parseFloat(row.querySelector('.price-input').value) || 0;
+                const includeInTotal = row.querySelector('input[type="checkbox"]').checked;
+
+                if (name && price > 0) {
+                    const service = { name, period, price };
+                    if (includeInTotal) {
+                        includedServices.push(service);
+                    } else {
+                        extraServices.push(service);
                     }
                 }
-                
-                // Page 9: Dynamic (landscape)
-                pdf.addPage([297, 210], 'landscape');
-                await generatePage9(pdf);
-                
-                // Page 10: Static (landscape)
-                pdf.addPage([297, 210], 'landscape');
-                try {
-                    const page10Img = await loadImage('page_10.png');
-                    pdf.addImage(page10Img, 'PNG', 0, 0, 297, 210);
-                } catch (e) {
-                    console.warn('Failed to load page_10.png');
-                    pdf.setFillColor(240, 240, 240);
-                    pdf.rect(0, 0, 297, 210, 'F');
-                    pdf.text('Page 10: Image not found', 148.5, 105, { align: 'center' });
+            });
+
+            return { includedServices, extraServices };
+        }
+
+        function updatePreviewModal() {
+            // Client info
+            document.getElementById('previewClientName').textContent = document.getElementById('clientName').value || '-';
+            document.getElementById('previewClientEmail').textContent = document.getElementById('clientEmail').value || '-';
+            document.getElementById('previewClientPhone').textContent = document.getElementById('clientPhone').value || '-';
+            document.getElementById('previewDocId').textContent = document.getElementById('documentId').value || `AL-${Date.now()}`;
+
+            // Services
+            const { includedServices, extraServices } = getServicesData();
+            const vatCheckbox = document.getElementById('vatCheckbox');
+            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
+
+            // Calculate totals
+            let subtotal = includedServices.reduce((sum, s) => sum + s.price, 0);
+            let vatAmount = vatCheckbox.checked ? subtotal * 0.05 : 0;
+            let finalTotal = subtotal + vatAmount - discount;
+
+            // Update included services table - show price with period
+            const servicesBody = document.getElementById('previewServicesBody');
+            servicesBody.innerHTML = '';
+
+            includedServices.forEach(service => {
+                const periodText = service.period ? `/${service.period}` : '';
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${service.name}</td>
+                    <td style="text-align: right;">${service.price.toLocaleString()}${periodText}</td>
+                `;
+                servicesBody.appendChild(row);
+            });
+
+            // Add subtotal, VAT, discount rows - no special styling
+            if (subtotal > 0) {
+                servicesBody.innerHTML += `
+                    <tr style="background: #f8f9fa; font-weight: 600;">
+                        <td style="text-align: right;">Subtotal:</td>
+                        <td style="text-align: right;">${subtotal.toLocaleString()} AED</td>
+                    </tr>
+                `;
+
+                if (vatCheckbox.checked && vatAmount > 0) {
+                    servicesBody.innerHTML += `
+                        <tr style="background: #f8f9fa;">
+                            <td style="text-align: right;">VAT (5%):</td>
+                            <td style="text-align: right;">${vatAmount.toLocaleString()} AED</td>
+                        </tr>
+                    `;
                 }
+
+                if (discount > 0) {
+                    servicesBody.innerHTML += `
+                        <tr style="background: #f8f9fa;">
+                            <td style="text-align: right;">Discount:</td>
+                            <td style="text-align: right;">-${discount.toLocaleString()} AED</td>
+                        </tr>
+                    `;
+                }
+            }
+
+            // Update extra services - simple styling
+            const extraSection = document.getElementById('previewExtraSection');
+            const extraBody = document.getElementById('previewExtraBody');
+
+            if (extraServices.length > 0) {
+                extraSection.style.display = 'block';
+                extraBody.innerHTML = extraServices.map(service => {
+                    const periodText = service.period ? `/${service.period}` : '';
+                    return `
+                        <tr>
+                            <td>${service.name}</td>
+                            <td style="text-align: right;">${service.price.toLocaleString()}${periodText}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                extraSection.style.display = 'none';
+            }
+
+            // Update final total
+            document.getElementById('previewFinalTotal').textContent = finalTotal.toLocaleString() + ' AED';
+             // Update Notes in preview
+                const notesText = document.getElementById('notesInput')?.value.trim();
+                const previewNotesSection = document.getElementById('previewNotesSection');
+                const previewNotesText = document.getElementById('previewNotesText');
                 
-                // Page 11: Verification page (PORTRAIT A4)
-                pdf.addPage([210, 297], 'portrait');
-                await generatePage11(pdf);
-                
-                // Save
-                pdf.save('ActLocal_Proposal_Complete.pdf');
-                
+                if (notesText && previewNotesSection && previewNotesText) {
+                    previewNotesSection.style.display = 'block';
+                    previewNotesText.textContent = notesText;
+                } else if (previewNotesSection) {
+                    previewNotesSection.style.display = 'none';
+                }
+
+            // Pre-fill email
+            document.getElementById('modalEmail').value = document.getElementById('clientEmail').value;
+        }
+
+        async function openPreviewModal() {
+            if (!validateForm()) return;
+
+            const btn = document.getElementById('previewBtn');
+            const loading = document.getElementById('loading');
+            const loadingText = document.getElementById('loadingText');
+
+            btn.disabled = true;
+            loadingText.textContent = 'Checking server connection...';
+            loading.classList.add('active');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Server not responding');
+                }
+
+                const data = await response.json();
+                if (data.email_configured === 'not_configured') {
+                    showAlert('Warning: Email service not configured. Check setup instructions above.', 'warning');
+                }
+
+                // Generate PDF for preview
+                loadingText.textContent = 'Generating PDF preview...';
+                currentPDF = await generatePDFDocument();
+
+                // Update preview content
+                updatePreviewModal();
+
+                // Show modal
+                document.getElementById('previewModal').classList.add('active');
+
             } catch (error) {
-                console.error('PDF generation failed:', error);
-                alert('Error: ' + error.message);
+                showAlert('Cannot connect to server. Make sure Flask is running on port 5000.');
+                console.error(error);
             } finally {
                 btn.disabled = false;
                 loading.classList.remove('active');
             }
         }
-        
-        async function generatePage9(pdf) {
-            const primaryBlue = [41, 128, 185];
-            const darkText = [44, 62, 80];
-            
-            // White background left side
-            pdf.setFillColor(255, 255, 255);
-            pdf.rect(0, 0, 148.5, 210, 'F');
-            
-            // Title
-            pdf.setTextColor(0, 150, 200);
-            pdf.setFontSize(18);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text('TIME TO BECOME MORE VISIBLE ONLINE!', 10, 15);
-            
-            // Table Header
-            pdf.setFillColor(primaryBlue[0], primaryBlue[1], primaryBlue[2]);
-            pdf.rect(10, 22, 128.5, 10, 'F');
-            pdf.setTextColor(255, 255, 255);
-            pdf.setFontSize(11);
-            pdf.text('SERVICE', 12, 28.5);
-            pdf.text('COST', 110, 28.5);
-            
-            // Services
-            const serviceRows = document.querySelectorAll('.service-row');
-            let yPos = 35;
-            
-            serviceRows.forEach((row, index) => {
-                const inputs = row.querySelectorAll('input');
-                const serviceName = inputs[0].value;
-                const price = inputs[1].value;
-                
-                if (index % 2 === 0) {
-                    pdf.setFillColor(240, 248, 255);
-                } else {
-                    pdf.setFillColor(255, 255, 255);
-                }
-                pdf.rect(10, yPos - 5, 128.5, 12, 'F');
-                
-                pdf.setTextColor(darkText[0], darkText[1], darkText[2]);
-                pdf.setFontSize(9);
-                pdf.setFont('helvetica', 'normal');
-                
-                const splitName = pdf.splitTextToSize(serviceName, 85);
-                pdf.text(splitName, 12, yPos + 2);
-                
-                pdf.setFont('helvetica', 'bold');
-                const priceText = price ? parseFloat(price).toLocaleString() : '-';
-                pdf.text(priceText, 125, yPos + 2, { align: 'right' });
-                
-                yPos += 12;
-            });
-            
-            // Total
-            pdf.setFillColor(230, 240, 250);
-            pdf.rect(10, yPos - 5, 128.5, 12, 'F');
-            pdf.setTextColor(darkText[0], darkText[1], darkText[2]);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(11);
-            pdf.text('Total', 12, yPos + 2);
-            
-            const totalText = document.getElementById('totalAmountDisplay').textContent;
-            pdf.setTextColor(0, 100, 150);
-            pdf.text(totalText, 125, yPos + 2, { align: 'right' });
-            
-            yPos += 20;
-            
-            // Terms
-            pdf.setTextColor(darkText[0], darkText[1], darkText[2]);
-            pdf.setFontSize(9);
-            pdf.setFont('helvetica', 'normal');
-            
-            const termItems = document.querySelectorAll('.term-item');
-            termItems.forEach(item => {
-                const checkbox = item.querySelector('.term-checkbox');
-                const text = item.querySelector('.term-input').value;
-                
-                if (checkbox.checked) {
-                    pdf.setFillColor(primaryBlue[0], primaryBlue[1], primaryBlue[2]);
-                    pdf.rect(12, yPos - 3, 4, 4, 'F');
-                    pdf.text(text, 18, yPos);
-                    yPos += 8;
-                }
-            });
-            
-            // Signature with increased spacing
-            yPos += 15;
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(11);
-            pdf.text('Sign this agreement to accept the quote', 10, yPos);
-            
-            yPos += 25;
-            pdf.setDrawColor(100, 100, 100);
-            pdf.line(10, yPos, 80, yPos);
-            
-            // Logo image (fixed/static)
-            try {
-                const logoImg = await loadImage('page_9_logo.png');
-                pdf.addImage(logoImg, 'PNG', 95, yPos - 20, 40, 20);
-            } catch (e) {
-                pdf.setTextColor(100, 150, 200);
-                pdf.setFontSize(12);
-                pdf.text('Lets Fly', 100, yPos - 5);
-                pdf.text('Together', 100, yPos + 2);
+
+        function closePreviewModal() {
+            document.getElementById('previewModal').classList.remove('active');
+            currentPDF = null;
+        }
+
+        async function downloadFromPreview() {
+            if (!currentPDF) {
+                showAlert('PDF not generated. Please try again.');
+                return;
             }
-            
-            // Right side image (fixed/static)
+
+            const clientName = document.getElementById('clientName').value.trim().replace(/\s+/g, '_');
+            currentPDF.save(`ActLocal_Proposal_${clientName}.pdf`);
+            showAlert('PDF downloaded successfully!', 'success');
+        }
+
+        async function sendEmailFromPreview() {
+            const emailBtn = event.target;
+            const toEmail = document.getElementById('modalEmail').value.trim();
+            const subject = document.getElementById('modalSubject').value.trim();
+            const message = document.getElementById('modalMessage').value.trim();
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!toEmail || !emailRegex.test(toEmail)) {
+                showAlert('Please enter a valid recipient email address');
+                return;
+            }
+
+            if (!currentPDF) {
+                showAlert('PDF not generated. Please try again.');
+                return;
+            }
+
+            emailBtn.disabled = true;
+            emailBtn.textContent = '⏳ Sending...';
+
             try {
-                const rightImg = await loadImage('page_9_right.png');
-                pdf.addImage(rightImg, 'PNG', 148.5, 0, 148.5, 210);
-            } catch (e) {
-                console.warn('page_9_right.png not found');
+                const pdfBlob = currentPDF.output('blob');
+                const reader = new FileReader();
+
+                reader.onloadend = async function () {
+                    try {
+                        const base64PDF = reader.result.split(',')[1];
+
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+                        const response = await fetch(`${API_BASE_URL}/send-proposal`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                to_email: toEmail,
+                                subject: subject,
+                                message: message,
+                                pdf_base64: base64PDF,
+                                client_name: document.getElementById('clientName').value
+                            }),
+                            signal: controller.signal,
+                            mode: 'cors'
+                        });
+
+                        clearTimeout(timeoutId);
+
+                        const result = await response.json();
+
+                        if (response.ok && result.success) {
+                            showAlert('✅ ' + result.message, 'success');
+                            closePreviewModal();
+                        } else {
+                            showAlert('❌ Failed to send: ' + (result.error || 'Unknown error'));
+                        }
+                    } catch (fetchError) {
+                        if (fetchError.name === 'AbortError') {
+                            showAlert('❌ Request timed out. Server might be busy.');
+                        } else {
+                            throw fetchError;
+                        }
+                    }
+                };
+
+                reader.onerror = function () {
+                    showAlert('❌ Failed to read PDF data');
+                };
+
+                reader.readAsDataURL(pdfBlob);
+
+            } catch (error) {
+                console.error('Email sending failed:', error);
+                showAlert('❌ Failed to send email: ' + error.message);
+            } finally {
+                emailBtn.disabled = false;
+                emailBtn.textContent = '📧 Send Email';
             }
         }
-        
+
+        // Set up PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        async function loadPdfAsImage(pdfUrl, pageNumber = 1, scale = 2) {
+            try {
+                const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+                
+                if (pageNumber > pdf.numPages) {
+                    console.warn(`Page ${pageNumber} not found in PDF. Using last page.`);
+                    pageNumber = pdf.numPages;
+                }
+                
+                const page = await pdf.getPage(pageNumber);
+                const viewport = page.getViewport({ scale: scale });
+                
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                
+                await page.render({
+                    canvasContext: context,
+                    viewport: viewport
+                }).promise;
+                
+                return canvas.toDataURL('image/jpeg', 0.9);
+            } catch (error) {
+                console.error(`Error loading PDF ${pdfUrl}:`, error);
+                return null;
+            }
+        }
+
+        async function generatePDFDocument() {
+            const { jsPDF } = window.jspdf;
+
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: [297, 210]
+            });
+
+            // Pages 1-8: Load from first_8_page.pdf
+            try {
+                const first8Pdf = await pdfjsLib.getDocument('first_8_page.pdf').promise;
+                const numPages = Math.min(8, first8Pdf.numPages);
+
+                for (let i = 1; i <= numPages; i++) {
+                    if (i > 1) pdf.addPage([297, 210], 'landscape');
+
+                    try {
+                        const imgData = await loadPdfAsImage('first_8_page.pdf', i);
+                        if (imgData) {
+                            pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210);
+                        } else {
+                            throw new Error('Failed to load page ' + i);
+                        }
+                    } catch (e) {
+                        console.warn(`Could not load page ${i} from first_8_page.pdf:`, e);
+                        pdf.setFillColor(240, 240, 240);
+                        pdf.rect(0, 0, 297, 210, 'F');
+                        pdf.setTextColor(150, 150, 150);
+                        pdf.setFontSize(14);
+                        pdf.text(`Page ${i}: Error loading first_8_page.pdf`, 148.5, 105, { align: 'center' });
+                    }
+                }
+
+                // Add blank pages if PDF has less than 8 pages
+                if (numPages < 8) {
+                    for (let i = numPages + 1; i <= 8; i++) {
+                        pdf.addPage([297, 210], 'landscape');
+                        pdf.setFillColor(240, 240, 240);
+                        pdf.rect(0, 0, 297, 210, 'F');
+                        pdf.setTextColor(150, 150, 150);
+                        pdf.setFontSize(14);
+                        pdf.text(`Page ${i}: Not found in first_8_page.pdf`, 148.5, 105, { align: 'center' });
+                    }
+                }
+
+            } catch (e) {
+                console.warn('Could not load first_8_page.pdf:', e);
+                for (let i = 1; i <= 8; i++) {
+                    if (i > 1) pdf.addPage([297, 210], 'landscape');
+                    pdf.setFillColor(240, 240, 240);
+                    pdf.rect(0, 0, 297, 210, 'F');
+                    pdf.setTextColor(150, 150, 150);
+                    pdf.setFontSize(14);
+                    pdf.text(`Page ${i}: first_8_page.pdf not found`, 148.5, 105, { align: 'center' });
+                }
+            }
+
+            // Page 9: Dynamic
+            pdf.addPage([297, 210], 'landscape');
+            await generatePage9(pdf);
+
+            // Page 10: Load from page_10.pdf
+            pdf.addPage([297, 210], 'landscape');
+            try {
+                const imgData = await loadPdfAsImage('page_10.pdf', 1);
+                if (imgData) {
+                    pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210);
+                } else {
+                    throw new Error('Failed to load page_10.pdf');
+                }
+            } catch (e) {
+                console.warn('Could not load page_10.pdf:', e);
+                pdf.setFillColor(240, 240, 240);
+                pdf.rect(0, 0, 297, 210, 'F');
+                pdf.setTextColor(150, 150, 150);
+                pdf.setFontSize(14);
+                pdf.text('Page 10: page_10.pdf not found', 148.5, 105, { align: 'center' });
+            }
+
+            // Page 11: Verification
+            pdf.addPage([210, 297], 'portrait');
+            await generatePage11(pdf);
+
+            return pdf;
+        }
+
+        async function generateFullPDF() {
+            if (!validateForm()) return;
+
+            const btn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const loadingText = document.getElementById('loadingText');
+
+            btn.disabled = true;
+            loadingText.textContent = 'Generating PDF... Please wait';
+            loading.classList.add('active');
+
+            try {
+                const pdf = await generatePDFDocument();
+                const clientName = document.getElementById('clientName').value.trim().replace(/\s+/g, '_');
+                pdf.save(`ActLocal_Proposal_${clientName}.pdf`);
+                showAlert('PDF generated successfully!', 'success');
+            } catch (error) {
+                console.error('PDF generation failed:', error);
+                showAlert('Error generating PDF: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                loading.classList.remove('active');
+            }
+        }
+
+        async function generatePage9(pdf) {
+            try {
+                const primaryBlue = [41, 128, 185];
+                const darkText = [44, 62, 80];
+
+                const { includedServices, extraServices } = getServicesData();
+                const vatCheckbox = document.getElementById('vatCheckbox');
+                const discountInput = document.getElementById('discountInput');
+
+                // Safely calculate numbers
+                let subtotal = 0;
+                if (Array.isArray(includedServices)) {
+                    subtotal = includedServices.reduce((sum, s) => sum + (parseFloat(s.price) || 0), 0);
+                }
+
+                let vatAmount = 0;
+                if (vatCheckbox && vatCheckbox.checked) {
+                    vatAmount = subtotal * 0.05;
+                }
+
+                let discount = 0;
+                if (discountInput) {
+                    discount = parseFloat(discountInput.value) || 0;
+                }
+
+                let finalTotal = subtotal + vatAmount - discount;
+
+                // Calculate content height to determine font size
+                const totalItems = (includedServices?.length || 0) + (extraServices?.length || 0) + 5;
+                let baseFontSize = 9;
+                let rowHeight = 11;
+
+                if (totalItems > 15) {
+                    baseFontSize = 7;
+                    rowHeight = 9;
+                } else if (totalItems > 12) {
+                    baseFontSize = 8;
+                    rowHeight = 10;
+                } else if (totalItems < 8) {
+                    baseFontSize = 10;
+                    rowHeight = 12;
+                }
+
+                // Fixed positions
+                const headerY = 15;
+                const tableHeaderY = 28;
+                const startY = 35;
+                const bottomY = 190;
+                const signatureLineY = bottomY + 12;
+                const logoY = bottomY + 5;
+
+                // White background
+                pdf.setFillColor(255, 255, 255);
+                pdf.rect(0, 0, 148.5, 210, 'F');
+
+                // Title
+                pdf.setTextColor(0, 150, 200);
+                pdf.setFontSize(16);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('TIME TO BECOME MORE VISIBLE ONLINE!', 10, headerY);
+
+                // Table header
+                pdf.setFillColor(primaryBlue[0], primaryBlue[1], primaryBlue[2]);
+                pdf.rect(10, 22, 128.5, 8, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(baseFontSize + 1);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('SERVICE', 12, tableHeaderY);
+                pdf.text('COST', 110, tableHeaderY);
+
+                let yPos = startY;
+                const maxY = bottomY - 25;
+
+                // Draw included services
+                if (Array.isArray(includedServices)) {
+                    includedServices.forEach((service, index) => {
+                        if (yPos > maxY) return;
+
+                        if (index % 2 === 0) {
+                            pdf.setFillColor(240, 248, 255);
+                        } else {
+                            pdf.setFillColor(255, 255, 255);
+                        }
+                        pdf.rect(10, yPos - 3, 128.5, rowHeight, 'F');
+
+                        pdf.setTextColor(darkText[0], darkText[1], darkText[2]);
+                        pdf.setFontSize(baseFontSize);
+                        pdf.setFont('helvetica', 'normal');
+
+                        let displayName = service.name || '';
+                        const maxChars = baseFontSize === 7 ? 50 : baseFontSize === 8 ? 45 : 40;
+                        if (displayName.length > maxChars) {
+                            displayName = displayName.substring(0, maxChars - 3) + '...';
+                        }
+                        pdf.text(displayName, 12, yPos + 3);
+
+                        pdf.setFont('helvetica', 'bold');
+                        const periodText = service.period ? `/${service.period}` : '';
+                        const priceValue = parseFloat(service.price) || 0;
+                        const priceDisplay = priceValue.toLocaleString() + periodText;
+                        pdf.text(priceDisplay, 125, yPos + 3, { align: 'right' });
+
+                        yPos += rowHeight;
+                    });
+                }
+
+                // Subtotal row
+                if (subtotal > 0 && yPos < maxY) {
+                    yPos += 3;
+                    pdf.setFillColor(250, 250, 250);
+                    pdf.rect(10, yPos - 3, 128.5, rowHeight, 'F');
+                    pdf.setTextColor(darkText[0], darkText[1], darkText[2]);
+                    pdf.setFontSize(baseFontSize);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.text('Subtotal', 12, yPos + 3);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.text(subtotal.toLocaleString() + ' AED', 125, yPos + 3, { align: 'right' });
+                    yPos += rowHeight;
+                }
+
+                // VAT row
+                if (vatCheckbox && vatCheckbox.checked && vatAmount > 0 && yPos < maxY) {
+                    pdf.setFillColor(255, 255, 255);
+                    pdf.rect(10, yPos - 3, 128.5, rowHeight, 'F');
+                    pdf.setTextColor(0, 0, 0);
+                    pdf.setFontSize(baseFontSize);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.text('VAT (5%)', 12, yPos + 3);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.text(vatAmount.toLocaleString() + ' AED', 125, yPos + 3, { align: 'right' });
+                    yPos += rowHeight;
+                }
+
+                // Discount row
+                if (discount > 0 && yPos < maxY) {
+                    pdf.setFillColor(255, 255, 255);
+                    pdf.rect(10, yPos - 3, 128.5, rowHeight, 'F');
+                    pdf.setTextColor(0, 0, 0);
+                    pdf.setFontSize(baseFontSize);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.text('Discount', 12, yPos + 3);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.text('-' + discount.toLocaleString() + ' AED', 125, yPos + 3, { align: 'right' });
+                    yPos += rowHeight;
+                }
+
+                // Total row
+                if (yPos < maxY) {
+                    yPos += 3;
+                    pdf.setFillColor(230, 240, 250);
+                    pdf.rect(10, yPos - 3, 128.5, rowHeight + 1, 'F');
+                    pdf.setTextColor(darkText[0], darkText[1], darkText[2]);
+                    pdf.setFontSize(baseFontSize + 1);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.text('Total', 12, yPos + 3);
+                    pdf.setTextColor(0, 100, 150);
+                    pdf.text(finalTotal.toLocaleString() + ' AED', 125, yPos + 3, { align: 'right' });
+                    yPos += rowHeight + 1;
+                }
+
+                // Extra services
+                if (Array.isArray(extraServices) && extraServices.length > 0) {
+                    yPos += 5;
+
+                    extraServices.forEach((service) => {
+                        if (yPos > maxY) return;
+
+                        pdf.setFillColor(255, 255, 255);
+                        pdf.rect(10, yPos - 3, 128.5, rowHeight, 'F');
+
+                        pdf.setTextColor(darkText[0], darkText[1], darkText[2]);
+                        pdf.setFontSize(baseFontSize);
+                        pdf.setFont('helvetica', 'normal');
+
+                        let displayName = service.name || '';
+                        const maxChars = baseFontSize === 7 ? 50 : baseFontSize === 8 ? 45 : 40;
+                        if (displayName.length > maxChars) {
+                            displayName = displayName.substring(0, maxChars - 3) + '...';
+                        }
+                        pdf.text(displayName, 12, yPos + 3);
+
+                        pdf.setFont('helvetica', 'bold');
+                        const periodText = service.period ? `/${service.period}` : '';
+                        const priceValue = parseFloat(service.price) || 0;
+                        const priceDisplay = priceValue.toLocaleString() + periodText;
+                        pdf.text(priceDisplay, 125, yPos + 3, { align: 'right' });
+
+                        yPos += rowHeight;
+                    });
+                }
+                                // Notes Section (after total, before terms)
+                const notesInput = document.getElementById('notesInput');
+                const notesText = notesInput ? notesInput.value.trim() : '';
+                
+                if (notesText && yPos < bottomY - 30) {
+                    yPos += 8;
+                    
+                    // Notes label
+                    pdf.setTextColor(primaryBlue[0], primaryBlue[1], primaryBlue[2]);
+                    pdf.setFontSize(baseFontSize);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.text('Notes:', 12, yPos);
+                    yPos += 5;
+                    
+                    // Notes content - wrap text
+                    pdf.setTextColor(darkText[0], darkText[1], darkText[2]);
+                    pdf.setFontSize(baseFontSize - 1);
+                    pdf.setFont('helvetica', 'normal');
+                    
+                    const maxWidth = 115; // mm width for text
+                    const lineHeight = 4;
+                    const maxNoteLines = Math.floor((bottomY - 20 - yPos) / lineHeight);
+                    
+                    // Simple text wrapping
+                    const words = notesText.split(' ');
+                    let currentLine = '';
+                    let lineCount = 0;
+                    
+                    for (let i = 0; i < words.length && lineCount < maxNoteLines; i++) {
+                        const testLine = currentLine + words[i] + ' ';
+                        const testWidth = pdf.getStringUnitWidth(testLine) * (baseFontSize - 1) / pdf.internal.scaleFactor;
+                        
+                        if (testWidth > maxWidth && currentLine !== '') {
+                            pdf.text(currentLine.trim(), 12, yPos);
+                            yPos += lineHeight;
+                            lineCount++;
+                            currentLine = words[i] + ' ';
+                        } else {
+                            currentLine = testLine;
+                        }
+                    }
+                    
+                    // Print last line
+                    if (currentLine.trim() && lineCount < maxNoteLines) {
+                        pdf.text(currentLine.trim(), 12, yPos);
+                        yPos += lineHeight;
+                    }
+                    
+                    yPos += 3; // Space after notes
+                }
+                // Terms section
+                const termItems = document.querySelectorAll('.term-item');
+                const checkedTerms = Array.from(termItems).filter(item => {
+                    const cb = item.querySelector('.term-checkbox');
+                    return cb && cb.checked;
+                });
+
+                if (checkedTerms.length > 0 && yPos < bottomY - 20) {
+                    yPos += 5;
+                    pdf.setTextColor(darkText[0], darkText[1], darkText[2]);
+                    pdf.setFontSize(baseFontSize - 1);
+                    pdf.setFont('helvetica', 'normal');
+
+                    checkedTerms.forEach(item => {
+                        if (yPos > bottomY - 15) return;
+
+                        const textInput = item.querySelector('.term-input');
+                        const text = textInput ? textInput.value : '';
+                        let termText = text;
+                        const maxTermChars = baseFontSize === 7 ? 60 : baseFontSize === 8 ? 55 : 50;
+                        if (termText.length > maxTermChars) termText = termText.substring(0, maxTermChars - 3) + '...';
+
+                        pdf.setFillColor(primaryBlue[0], primaryBlue[1], primaryBlue[2]);
+                        pdf.rect(12, yPos - 1, 3, 3, 'F');
+                        pdf.text(termText, 18, yPos + 2);
+                        yPos += rowHeight - 2;
+                    });
+                }
+
+                // Signature section - FIXED POSITION
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(baseFontSize + 1);
+                pdf.text('Sign this agreement to accept the quote', 10, bottomY);
+
+                // Signature line - FIXED 12mm below text
+                pdf.setDrawColor(100, 100, 100);
+                pdf.line(10, signatureLineY, 80, signatureLineY);
+
+                // Logo
+                try {
+                    const logoImg = await loadImage('page_9_logo.png', 600, 0.6);
+                    pdf.addImage(logoImg, 'JPEG', 95, logoY - 10, 35, 18, undefined, 'FAST');
+                } catch (e) {
+                    // White background for fallback text
+                    pdf.setFillColor(255, 255, 255);
+                    pdf.rect(85, logoY - 12, 50, 20, 'F');
+                    
+                    pdf.setTextColor(100, 150, 200);
+                    pdf.setFontSize(baseFontSize + 1);
+                    pdf.text('Lets Fly', 100, logoY);
+                    pdf.text('Together', 100, logoY + 5);
+                }
+
+                // Right side image
+                try {
+                    const rightImg = await loadImage('page_9_right.png',600,0.6);
+                    pdf.addImage(rightImg, 'JPEG', 148.5, 0, 148.5, 210, undefined, 'FAST');
+                } catch (e) {
+                    console.warn('page_9_right.png not found, continuing without it');
+                }
+
+            } catch (error) {
+                console.error('Error in generatePage9:', error);
+                throw error;
+            }
+        }
+
         async function generatePage11(pdf) {
             const now = new Date();
             const formattedDate = formatDate(now);
-            
-            // Get client info
+
             const clientName = document.getElementById('clientName').value;
             const clientEmail = document.getElementById('clientEmail').value;
             const clientPhone = document.getElementById('clientPhone').value;
-            const docId = document.getElementById('documentId').value || '';
-            
-            // Colors
+            const docId = document.getElementById('documentId').value || `AL-${Date.now()}`;
+
             const textGray = [80, 80, 80];
             const borderGray = [200, 200, 200];
-            
-            // White background
+
             pdf.setFillColor(255, 255, 255);
             pdf.rect(0, 0, 210, 297, 'F');
-            
-            // Title "Verification"
+
             pdf.setTextColor(textGray[0], textGray[1], textGray[2]);
             pdf.setFontSize(28);
             pdf.setFont('helvetica', 'normal');
             pdf.text('Verification', 20, 30);
-            
-            // Document ID
+
             pdf.setFontSize(10);
             pdf.text(`Document ID ${docId}`, 20, 42);
-            
-            // Document section box (with border)
+
             pdf.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
             pdf.setLineWidth(0.5);
             pdf.rect(20, 50, 170, 65);
-            
-            // Document label (bold)
+
             pdf.setFont('helvetica', 'bold');
             pdf.setFontSize(11);
             pdf.text('Document', 25, 62);
-            
-            // Document details
+
             pdf.setFont('helvetica', 'normal');
             pdf.setFontSize(10);
             pdf.text('Act Local Monea_Revised', 25, 75);
@@ -843,16 +2028,14 @@
             pdf.text(`Initiated on ${formattedDate} by Act Local`, 25, 99);
             pdf.text('UAE (AU)', 25, 107);
             pdf.text(`Finalised on ${formattedDate} (+0100)`, 25, 115);
-            
-            // Signatories section
+
             pdf.setFont('helvetica', 'bold');
             pdf.setFontSize(11);
             pdf.text('Signatories', 20, 135);
-            
-            // ActLocal UAE Box (Left) - with border
+
             pdf.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
             pdf.rect(20, 140, 80, 75);
-            
+
             pdf.setFontSize(10);
             pdf.setFont('helvetica', 'bold');
             pdf.text('Act Local UAE (AU)', 25, 152);
@@ -861,40 +2044,35 @@
             pdf.text('contract@actlocal.ae', 25, 175);
             pdf.text('+971588995545', 25, 185);
             pdf.text(`Signed ${formattedDate} (+0100)`, 25, 200);
-            
-            // Client Box (Right) - with border
+
             pdf.rect(110, 140, 80, 75);
-            
+
             pdf.setFont('helvetica', 'bold');
             pdf.text(`${clientName} (M)`, 115, 152);
             pdf.setFont('helvetica', 'normal');
             pdf.text(clientName, 115, 165);
             pdf.text(clientEmail, 115, 175);
             pdf.text(clientPhone, 115, 185);
-            
-            // Signature line for client (horizontal line)
+
             pdf.setDrawColor(150, 150, 150);
             pdf.line(115, 195, 185, 195);
             pdf.setFontSize(9);
             pdf.text('Signature required', 115, 205);
-            
-            // Verification text box (at bottom)
+
             pdf.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
             pdf.rect(20, 225, 170, 45);
-            
+
             pdf.setFontSize(8);
             pdf.setTextColor(100, 100, 100);
             const verificationText = `This verification was issued by Scrive. For more information/evidence about this document see the concealed attachments. Use a PDF-reader such as Adobe Reader that can show concealed attachments to view the attachments. Please observe that if the document is printed, the integrity of such printed copy cannot be verified as per the below and that a basic print-out lacks the contents of the concealed attachments. The digital signature (electronic seal) ensures that the integrity of this document, including the concealed attachments, can be proven mathematically and independently of Scrive. For your convenience Scrive also provides a service that enables you to automatically verify the document's integrity at: https://scrive.com/verify`;
-            
+
             const splitText = pdf.splitTextToSize(verificationText, 160);
             pdf.text(splitText, 25, 235);
-            
-            // Stamp at bottom right (using stamp.png)
+
             try {
                 const stampImg = await loadImage('stamp.png');
                 pdf.addImage(stampImg, 'PNG', 150, 245, 50, 50);
             } catch (e) {
-                console.warn('stamp.png not found, using placeholder');
                 pdf.setDrawColor(100, 100, 100);
                 pdf.setLineWidth(2);
                 pdf.circle(175, 270, 20);
@@ -903,16 +2081,58 @@
                 pdf.text('STAMP', 165, 275);
             }
         }
-        
-        function loadImage(src) {
+
+                function loadImage(src, maxWidth = 800, quality = 0.6) {
             return new Promise((resolve, reject) => {
                 const img = new Image();
                 img.crossOrigin = 'Anonymous';
-                img.onload = () => resolve(img);
+                img.onload = () => {
+                    // Create canvas for compression
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Calculate new dimensions (max 800px width)
+                    let newWidth = img.width;
+                    let newHeight = img.height;
+                    
+                    if (newWidth > maxWidth) {
+                        newHeight = (maxWidth / newWidth) * newHeight;
+                        newWidth = maxWidth;
+                    }
+                    
+                    canvas.width = newWidth;
+                    canvas.height = newHeight;
+                    
+                    // Draw and compress
+                    ctx.drawImage(img, 0, 0, newWidth, newHeight);
+                    
+                    // Convert to JPEG with compression
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                    
+                    const newImg = new Image();
+                    newImg.onload = () => resolve(newImg);
+                    newImg.onerror = () => reject(new Error(`Failed to load compressed ${src}`));
+                    newImg.src = compressedDataUrl;
+                };
                 img.onerror = () => reject(new Error(`Failed to load ${src}`));
                 img.src = src;
             });
         }
+
+        // Close modal when clicking outside
+        document.getElementById('previewModal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closePreviewModal();
+            }
+        });
+
+        // Escape key to close modal
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closePreviewModal();
+            }
+        });
     </script>
 </body>
+
 </html>
